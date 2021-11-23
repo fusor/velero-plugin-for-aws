@@ -77,13 +77,21 @@ func (b *VolumeSnapshotter) Init(config map[string]string) error {
 		config,
 		regionKey,
 		credentialProfileKey,
+		credentialsFileKey,
+		enableSharedConfigKey,
 		snapshotCreationTimeoutKey,
 	); err != nil {
 		return err
 	}
 
 	region := config[regionKey]
+	if region == "" {
+		return errors.Errorf("missing %s in aws configuration", regionKey)
+	}
 	credentialProfile := config[credentialProfileKey]
+	credentialsFile := config[credentialsFileKey]
+	enableSharedConfig := config[enableSharedConfigKey]
+
 	// if config["snapshotCreationTimeout"] is empty, default to 60m; otherwise, parse it
 	var err error
 	if val := config[snapshotCreationTimeoutKey]; val == "" {
@@ -94,13 +102,13 @@ func (b *VolumeSnapshotter) Init(config map[string]string) error {
 			return errors.Wrapf(err, "unable to parse value %q for config key %q (expected a duration string)", val, snapshotCreationTimeoutKey)
 		}
 	}
-	if region == "" {
-		return errors.Errorf("missing %s in aws configuration", regionKey)
-	}
 
 	awsConfig := aws.NewConfig().WithRegion(region)
+	sessionOptions, err := newSessionOptions(*awsConfig, credentialProfile, "", credentialsFile, enableSharedConfig)
+	if err != nil {
+		return err
+	}
 
-	sessionOptions := session.Options{Config: *awsConfig, Profile: credentialProfile}
 	sess, err := getSession(sessionOptions)
 	if err != nil {
 		return err
