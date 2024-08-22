@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/velero-plugin-for-aws
 
-go 1.22.6
+go 1.22.5
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.24.1
@@ -84,3 +84,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+replace github.com/vmware-tanzu/velero => github.com/openshift/velero v0.10.2-0.20240822153644-9ac863aaa452
